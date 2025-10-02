@@ -13,19 +13,27 @@ SmartMail reformats Zimbra (webmail.polytechnique.fr) drafts with a local LLaMA 
 
 ## Architecture Diagram
 ```mermaid
-graph TD
-    U[Zimbra Composer (TinyMCE)] --> CS[Content Scripts<br/>editorWatcher.js & modal.js]
-    CS -->|Ctrl+Shift+W| UI[Modal UI<br/>Shadow DOM]
-    UI -->|Prompt data| SW[Service Worker<br/>background.js]
-    SW --> PB[Prompt Builder<br/>promptBuilder.js]
-    PB --> SW
-    SW --> MC[Model Client<br/>modelClient.js]
-    MC -->|HTTP warmup/generate| LL[Local LLaMA Server]
-    SW -->|State broadcast| CS
-    UI -->|Insert formatted text| U
-    SW --> OPT[Options Page<br/>options/]
-    OPT -->|chrome.storage sync| SW
-    OPT -->|chrome.storage sync| CS
+graph TD;
+    Zimbra[Zimbra composer (TinyMCE)];
+    ContentScripts[Content scripts (editor watcher)];
+    ModalUI[Modal UI panel];
+    ServiceWorker[Service worker];
+    PromptBuilder[Prompt builder module];
+    ModelClient[Model client];
+    Llama[Local LLaMA server];
+    Options[Options page];
+
+    Zimbra --> ContentScripts;
+    ContentScripts --> ModalUI;
+    ModalUI --> ServiceWorker;
+    ServiceWorker --> PromptBuilder;
+    PromptBuilder --> ServiceWorker;
+    ServiceWorker --> ModelClient;
+    ModelClient --> Llama;
+    ServiceWorker --> ContentScripts;
+    ModalUI --> Zimbra;
+    Options --> ServiceWorker;
+    Options --> ContentScripts;
 ```
 
 ## Key Modules
@@ -56,3 +64,7 @@ graph TD
 5. Finish the modal UX, wiring content scripts and the service worker, and support insertion into the TinyMCE body.
 6. Create the options page for configuring the server address, template overrides, timeouts, and auto-warmup toggles.
 7. Perform end-to-end manual QA on Zimbra, tune warmup timing, and document the workflow in this README.
+
+
+
+
